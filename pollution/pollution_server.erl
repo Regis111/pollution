@@ -1,6 +1,7 @@
 -module(pollution_server).
 
--export([start/0,init/0,loop/1,try_fun/3,call/1,getMonitor/0,
+-export([
+         start/0,init/0,loop/1,try_fun/3,call/1,getMonitor/0,
          addStation/2,addValue/4,removeValue/3,getOneValue/3,
         getStationMean/2,getDailyMean/2,variation/1,stop/0
         ]).
@@ -17,36 +18,10 @@ loop(M) ->
         {request, Pid, {getMonitor}} ->
             Pid ! {reply, M},
             loop(M);
-%       {request, Pid, {addStation, Name, Coords}} -> %moze
-%            NewM = try_fun(addStation,{Name, Coords, M}),%pollution:addStation(Name,Coords,M), 
-%            Pid ! {reply, ok}, 
-%            loop(NewM);
-
-%        {request, Pid, {addValue, Name, Date, Type, Value}} -> % moze
-%            Pid ! {reply, ok},
-%            NewM = pollution:addValue(Name, Date, Type, Value, M),
-%            loop(NewM);
-%
-%        {request, Pid, {removeValue, Name, Date, Type}} -> %moze
-%            Pid ! {reply, ok},
-%            NewM = pollution:removeValue(Name, Date, Type, M),
-%            loop(NewM);
-%
-%        {request, Pid,{getOneValue, Name, Date, Type}} -> %moze
-%            Reply = pollution:getOneValue(Name,Date,Type,M),
-%            Pid ! {reply, Reply},
-%            loop(M); 
-%
-%        {request, Pid, {getStationMean, Name, Type}} -> %moze
-%            Reply = pollution:getStationMean(Name, Type, M),
-%            Pid ! {reply, Reply},
-%            loop(M);
-%
         {request, Pid, {getDailyMean, Type, Date}} ->
             Reply = pollution:getDailyMean(Type,Date,M),
             Pid ! {reply, Reply},
             loop(M);
-
         {request, Pid, {variation, Type}} ->
             Reply = pollution:getMaximumVariationStation(Type,M),
             Pid ! {reply, Reply},
@@ -54,12 +29,11 @@ loop(M) ->
 
         {request, Pid, {stop}} ->
             Pid ! {reply, ok},
-            stop();
+            ok;
         {request, Pid, Args} ->
             try_fun(Pid,Args,M)
     after
-            80000 ->
-              io:format("Shutting down the server with PID: ~w.~n", [self()]), 
+            80000 -> 
               stop()
     end.
 
