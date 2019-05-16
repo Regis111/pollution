@@ -7,7 +7,9 @@
         ]).
 
 start() ->
-    register(server,spawn(pollution_server, init, [])).
+    Pid = spawn(pollution_server, init, []),
+    register(server,Pid),
+    Pid.
 
 init() ->
     M = pollution:createMonitor(),
@@ -27,14 +29,14 @@ loop(M) ->
             Pid ! {reply, Reply},
             loop(M);
 
-        {request, Pid, {stop}} ->
+        {request, Pid, stop} ->
             Pid ! {reply, ok},
-            ok;
+            1/0;
         {request, Pid, Args} ->
             try_fun(Pid,Args,M)
     after
             80000 -> 
-              stop()
+              ok
     end.
 
 try_fun(Pid,{addStation,Name,Coords},M) -> 
@@ -109,4 +111,4 @@ getDailyMean(Type,Date) -> call({getDailyMean,Type,Date}).
 
 variation(Type) -> call({variation,Type}).
 
-stop() -> call({stop}).
+stop() -> call(stop).
